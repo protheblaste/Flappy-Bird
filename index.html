@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Midnight Flappy Bird</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* Deep Space Background */
+            background: #0a0a12; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            /* Dark Blue Gradient */
+            background: linear-gradient(to bottom, #020111 0%, #090729 100%);
+            box-shadow: 0 0 50px rgba(0, 195, 255, 0.2);
+            border: 2px solid #1a1a2e;
+            border-radius: 8px;
+        }
+
+        #score {
+            position: absolute;
+            top: 40px;
+            font-size: 48px;
+            color: #00f2ff;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.7);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="score">0</div>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let bird = {
+        x: 80,
+        y: 300,
+        size: 24,
+        velocity: 0,
+        gravity: 0.4, // Slightly smoother gravity
+        lift: -7
+    };
+
+    let pipes = [];
+    let frame = 0;
+    let score = 0;
+    let gameOver = false;
+
+    function resetGame() {
+        bird.y = 300;
+        bird.velocity = 0;
+        pipes = [];
+        score = 0;
+        frame = 0;
+        gameOver = false;
+        document.getElementById("score").innerText = score;
+    }
+
+    function spawnPipe() {
+        let gap = 160;
+        let minHeight = 50;
+        let maxHeight = canvas.height - gap - minHeight;
+        let topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
+
+        pipes.push({
+            x: canvas.width,
+            top: topHeight,
+            bottom: topHeight + gap,
+            width: 60
+        });
+    }
+
+    function update() {
+        if (gameOver) return;
+
+        frame++;
+
+        // Bird physics
+        bird.velocity += bird.gravity;
+        bird.y += bird.velocity;
+
+        // Spawn pipes
+        if (frame % 100 === 0) {
+            spawnPipe();
+        }
+
+        // Pipes movement
+        for (let i = pipes.length - 1; i >= 0; i--) {
+            let pipe = pipes[i];
+            pipe.x -= 2.5; // Slightly faster for challenge
+
+            // Improved Collision Box
+            if (
+                bird.x + 4 < pipe.x + pipe.width &&
+                bird.x + bird.size - 4 > pipe.x &&
+                (bird.y + 4 < pipe.top || bird.y + bird.size - 4 > pipe.bottom)
+            ) {
+                gameOver = true;
+            }
+
+            // Score Logic
+            if (!pipe.passed && pipe.x + pipe.width < bird.x) {
+                score++;
+                pipe.passed = true;
+                document.getElementById("score").innerText = score;
+            }
+
+            // Remove off-screen pipes
+            if (pipe.x + pipe.width < 0) {
+                pipes.splice(i, 1);
+            }
+        }
+
+        // Boundary collision
+        if (bird.y + bird.size > canvas.height || bird.y < 0) {
+            gameOver = true;
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Bird (Neon Yellow Glow)
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#fff700";
+        ctx.fillStyle = "#fff700";
+        ctx.beginPath();
+        ctx.roundRect(bird.x, bird.y, bird.size, bird.size, 5);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset blur for other elements
+
+        // Draw Pipes (Neon Cyan)
+        pipes.forEach(pipe => {
+            // Main Pipe Body
+            ctx.fillStyle = "#00d4ff";
+            ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+            ctx.fillRect(pipe.x, pipe.bottom, pipe.width, canvas.height);
+            
+            // Pipe Caps for detail
+            ctx.fillStyle = "#00f2ff";
+            ctx.fillRect(pipe.x - 5, pipe.top - 20, pipe.width + 10, 20);
+            ctx.fillRect(pipe.x - 5, pipe.bottom, pipe.width + 10, 20);
+        });
+
+        if (gameOver) {
+            // Dark Overlay
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "#ff0055";
+            ctx.fillStyle = "#ff0055";
+            ctx.font = "bold 42px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("SYSTEM CRASH", canvas.width / 2, 260);
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Click to Reboot", canvas.width / 2, 310);
+        }
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function flap() {
+        if (gameOver) {
+            resetGame();
+        } else {
+            bird.velocity = bird.lift;
+        }
+    }
+
+    window.addEventListener("keydown", e => {
+        if (e.code === "Space") {
+            e.preventDefault(); // Stop page scrolling
+            flap();
+        }
+    });
+
+    canvas.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        flap();
+    });
+
+    gameLoop();
+</script>
+
+</body>
+</html>
