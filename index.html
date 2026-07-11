@@ -7,7 +7,7 @@
         body {
             margin: 0;
             overflow: hidden;
-            /* Deep Space Background */
+            
             background: #0a0a12; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -18,7 +18,7 @@
 
         canvas {
             display: block;
-            /* Dark Blue Gradient */
+            
             background: linear-gradient(to bottom, #020111 0%, #090729 100%);
             box-shadow: 0 0 50px rgba(0, 195, 255, 0.2);
             border: 2px solid #1a1a2e;
@@ -50,7 +50,7 @@
         y: 300,
         size: 24,
         velocity: 0,
-        gravity: 0.4, // Slightly smoother gravity
+        gravity: 0.4, 
         lift: -7
     };
 
@@ -88,21 +88,21 @@
 
         frame++;
 
-        // Bird physics
+        
         bird.velocity += bird.gravity;
         bird.y += bird.velocity;
 
-        // Spawn pipes
+        
         if (frame % 100 === 0) {
             spawnPipe();
         }
 
-        // Pipes movement
+        
         for (let i = pipes.length - 1; i >= 0; i--) {
             let pipe = pipes[i];
             pipe.x -= 2.5; // Slightly faster for challenge
 
-            // Improved Collision Box
+            
             if (
                 bird.x + 4 < pipe.x + pipe.width &&
                 bird.x + bird.size - 4 > pipe.x &&
@@ -111,20 +111,20 @@
                 gameOver = true;
             }
 
-            // Score Logic
+            
             if (!pipe.passed && pipe.x + pipe.width < bird.x) {
                 score++;
                 pipe.passed = true;
                 document.getElementById("score").innerText = score;
             }
 
-            // Remove off-screen pipes
+            
             if (pipe.x + pipe.width < 0) {
                 pipes.splice(i, 1);
             }
         }
 
-        // Boundary collision
+        
         if (bird.y + bird.size > canvas.height || bird.y < 0) {
             gameOver = true;
         }
@@ -133,7 +133,7 @@
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Bird (Neon Yellow Glow)
+        
         ctx.shadowBlur = 15;
         ctx.shadowColor = "#fff700";
         ctx.fillStyle = "#fff700";
@@ -142,21 +142,21 @@
         ctx.fill();
         ctx.shadowBlur = 0; // Reset blur for other elements
 
-        // Draw Pipes (Neon Cyan)
+        
         pipes.forEach(pipe => {
-            // Main Pipe Body
+            
             ctx.fillStyle = "#00d4ff";
             ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
             ctx.fillRect(pipe.x, pipe.bottom, pipe.width, canvas.height);
             
-            // Pipe Caps for detail
+            
             ctx.fillStyle = "#00f2ff";
             ctx.fillRect(pipe.x - 5, pipe.top - 20, pipe.width + 10, 20);
             ctx.fillRect(pipe.x - 5, pipe.bottom, pipe.width + 10, 20);
         });
 
         if (gameOver) {
-            // Dark Overlay
+            
             ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -190,7 +190,7 @@
 
     window.addEventListener("keydown", e => {
         if (e.code === "Space") {
-            e.preventDefault(); // Stop page scrolling
+            e.preventDefault(); 
             flap();
         }
     });
